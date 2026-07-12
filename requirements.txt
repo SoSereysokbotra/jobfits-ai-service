@@ -1,0 +1,17 @@
+# jobfits-ai-service dependencies
+# Install into a venv: pip install -r requirements.txt
+# (Versions are lower bounds; pin exact versions with `pip freeze` once building starts.)
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
+httpx>=0.27
+pydantic>=2.6
+pydantic-settings>=2.2
+python-dotenv>=1.0
+jinja2>=3.1              # prompt templates (optional; can use plain .txt instead)
+
+# ── dev / test ─────────────────────────────────────────────
+pytest>=8.0
+respx>=0.21             # mock Ollama HTTP calls in tests (no GPU needed)
+ruff>=0.4               # lint (optional)
+black>=24.0             # format (optional)

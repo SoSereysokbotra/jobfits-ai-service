@@ -1,0 +1,6 @@
+PLACEHOLDER PROMPT — cover letter generation (Phase 4).
+
+Intent: instruct Qwen 3 to write a cover letter from resumeSummary + job details in the
+requested tone. Returns plain text (wrapped into { coverLetter } by the service).
+
+Do not write the final prompt yet — see BUILD_PLAN.md §6 Phase 4.

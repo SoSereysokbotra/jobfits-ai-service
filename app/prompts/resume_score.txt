@@ -1,0 +1,6 @@
+PLACEHOLDER PROMPT — resume scoring (Phase 3).
+
+Intent: instruct Qwen 3 to rate a resume (optionally against targetRole) and return ONLY
+JSON matching schemas.resume.ScoreResponse (atsScore, qualityScore, breakdown, suggestions[]).
+
+Do not write the final prompt yet — see BUILD_PLAN.md §6 Phase 3.

@@ -1,0 +1,7 @@
+PLACEHOLDER PROMPT — resume parsing (Phase 2).
+
+Intent: instruct Qwen 3 to read raw resume text and return ONLY JSON matching
+schemas.resume.ParseResponse (fullName, email, phone, location, summary, skills[],
+experiences[], educations[]). No prose, no markdown fences.
+
+Do not write the final prompt yet — see BUILD_PLAN.md §6 Phase 2.

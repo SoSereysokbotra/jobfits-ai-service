@@ -1,0 +1,6 @@
+PLACEHOLDER PROMPT — interview questions / feedback (Phase 4).
+
+Intent: instruct Qwen 3 to either (kind=questions) generate tailored interview questions with
+guidance as JSON, or (kind=feedback) critique a candidate's answer.
+
+Do not write the final prompt yet — see BUILD_PLAN.md §6 Phase 4.
