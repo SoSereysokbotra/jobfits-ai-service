@@ -1,9 +1,17 @@
-"""
-Embedding request/response schemas.
+"""Embedding request/response schemas. Contract: BUILD_PLAN.md §4.3."""
 
-WILL CONTAIN:
-- EmbedRequest { inputs: list[str] }
-- EmbedResponse { model, dim, embeddings: list[list[float]] }
+from __future__ import annotations
 
-Contract: BUILD_PLAN.md §4.3. NO LOGIC YET — placeholder.
-"""
+from pydantic import Field
+
+from app.schemas.common import CamelModel
+
+
+class EmbedRequest(CamelModel):
+    inputs: list[str] = Field(..., min_length=1)
+
+
+class EmbedResponse(CamelModel):
+    model: str
+    dim: int
+    embeddings: list[list[float]]

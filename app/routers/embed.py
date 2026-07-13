@@ -1,9 +1,22 @@
-"""
-Embedding router.
+"""Embedding router (BUILD_PLAN.md §4.3). Guarded by the service API key."""
 
-WILL CONTAIN (Phase 1):
-- POST /api/v1/embed -> schemas.embed.EmbedResponse (BGE-M3, 1024-dim).
-Delegates to app.services.embed_service. Guarded by require_api_key.
+from __future__ import annotations
 
-Contract: BUILD_PLAN.md §4.3. NO LOGIC YET — placeholder.
-"""
+from fastapi import APIRouter, Depends
+
+from app.config import Settings
+from app.deps import get_current_settings, get_ollama_client, require_api_key
+from app.schemas.embed import EmbedRequest, EmbedResponse
+from app.services.embed_service import EmbedService
+from app.services.ollama_client import OllamaClient
+
+router = APIRouter(dependencies=[Depends(require_api_key)])
+
+
+@router.post("/embed", response_model=EmbedResponse)
+async def embed(
+    request: EmbedRequest,
+    ollama: OllamaClient = Depends(get_ollama_client),
+    settings: Settings = Depends(get_current_settings),
+) -> EmbedResponse:
+    return await EmbedService(ollama, settings).embed(request.inputs)
