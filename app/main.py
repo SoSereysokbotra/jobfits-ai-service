@@ -4,6 +4,8 @@
 Part 1 wires health + embed; resume and generate routers are added in later parts.
 """
 
+#.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+
 from __future__ import annotations
 
 import logging
@@ -12,7 +14,7 @@ import time
 from fastapi import FastAPI, Request
 
 from app.core.errors import register_exception_handlers
-from app.routers import embed, generate, health, resume
+from app.routers import embed, generate, health, rerank, resume
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ai-service")
@@ -41,6 +43,7 @@ def create_app() -> FastAPI:
     app.include_router(embed.router, prefix="/api/v1", tags=["embed"])
     app.include_router(resume.router, prefix="/api/v1", tags=["resume"])
     app.include_router(generate.router, prefix="/api/v1", tags=["generate"])
+    app.include_router(rerank.router, prefix="/api/v1", tags=["rerank"])
 
     return app
 

@@ -16,7 +16,10 @@ class CoverLetterRequest(CamelModel):
     resume_summary: str = Field(..., min_length=1)
     job_title: str = Field(..., min_length=1)
     company_name: str = Field(..., min_length=1)
-    job_description: str = Field(..., min_length=1)
+    # Optional: some callers only hold identifiers. The browser extension must
+    # never scrape a posting's body (LinkedIn TOS), so it sends title + company
+    # only and the prompt degrades to resume-led writing. See prompts/cover_letter.txt.
+    job_description: Optional[str] = None
     tone: str = "professional"
 
 
