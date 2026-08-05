@@ -42,7 +42,7 @@ def test_returns_structured_reasoning():
     assert body["verdict"] == "strong"
     assert body["matchedRequirements"][0]["evidenceFromCv"].startswith("5 years")
     assert body["gaps"][0]["requirement"] == "Kubernetes"
-    assert body["promptVersion"] == "v1"
+    assert body["promptVersion"] == "v2"  # current best-measured default
     assert body["degraded"] is False
 
 
@@ -116,12 +116,12 @@ def test_v1_sends_a_json_payload_and_v2_sends_delimited_documents():
 
     respx.post(CHAT).mock(side_effect=capture)
 
-    client.post("/api/v1/match/reason", json=REQUEST, headers=AUTH)
+    client.post(
+        "/api/v1/match/reason", json={**REQUEST, "promptVersion": "v1"}, headers=AUTH
+    )
     assert json.loads(seen[0])["candidate"] == REQUEST["candidateSummary"]
 
-    client.post(
-        "/api/v1/match/reason", json={**REQUEST, "promptVersion": "v2"}, headers=AUTH
-    )
+    client.post("/api/v1/match/reason", json=REQUEST, headers=AUTH)  # default = v2
     assert "=== CANDIDATE CV" in seen[1]
     assert "=== JOB POSTING" in seen[1]
     assert REQUEST["candidateSummary"] in seen[1]

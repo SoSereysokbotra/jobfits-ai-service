@@ -31,9 +31,18 @@ stays reproducible:
   **faithfulness 5.9%**, calibration **ρ = 0.137**. The failure was diagnosable from the
   numbers: requirement groundedness was 87.7%, i.e. the model filled *both* fields from the
   job posting, so its "CV evidence" almost never appeared in the CV.
-- **v2** — delimits the CV and the job posting explicitly and shows a wrong/right example
-  drawn from an unrelated domain (an on-topic example got copied verbatim into
-  `evidenceFromCv` as if it were the candidate's own text).
+- **v2** (current default) — delimits the CV and the job posting explicitly and shows a
+  wrong/right example drawn from an unrelated domain. Re-measured on the same 150 pairs:
+  **faithfulness 16.9%** (up), calibration **ρ = −0.065** (down — mildly inverted).
+  The default is the *best-measured* version, not the newest.
+
+⚠️ **Neither version is usable in a user-facing path.** Two prompt versions moved calibration
+from 0.137 to −0.065, i.e. randomly around zero, and v2's faithfulness gain is partly
+evasion — 82 of 150 pairs produced zero matched requirements. Also note **the model copies
+the prompt's few-shot example verbatim even from an unrelated domain** (28 of v2's 138
+ungrounded quotes are the pastry-chef example), so a v3 should drop the literal example
+entirely. The next honest experiment is this harness against **full qwen3 on the GPU box** —
+`qwen3:0.6b` should be treated as unable to produce a user-facing fitScore.
 
 Measured faithfulness/calibration per version lives in `jobfit-backend/eval/reports/`
 (`generation-<version>-<timestamp>.md`, plus `BASELINE-GENERATION-2026-08-05.md`) — produced

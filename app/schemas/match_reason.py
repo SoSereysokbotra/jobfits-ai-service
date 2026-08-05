@@ -23,7 +23,8 @@ class MatchReasonRequest(CamelModel):
     job_title: str = Field(..., min_length=1)
     job_description: str = Field(..., min_length=1)
     # Prompt A/B knob for the Phase C flywheel: picks app/prompts/match_reason_<v>.txt.
-    prompt_version: str = Field(default="v1", pattern=r"^[a-z0-9_]+$")
+    # Default is the current best-measured version, not the newest one.
+    prompt_version: str = Field(default="v2", pattern=r"^[a-z0-9_]+$")
 
 
 class MatchedRequirement(CamelModel):
