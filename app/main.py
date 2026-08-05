@@ -14,7 +14,7 @@ import time
 from fastapi import FastAPI, Request
 
 from app.core.errors import register_exception_handlers
-from app.routers import embed, generate, health, rerank, resume
+from app.routers import embed, generate, health, match_reason, rerank, resume
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ai-service")
@@ -44,6 +44,7 @@ def create_app() -> FastAPI:
     app.include_router(resume.router, prefix="/api/v1", tags=["resume"])
     app.include_router(generate.router, prefix="/api/v1", tags=["generate"])
     app.include_router(rerank.router, prefix="/api/v1", tags=["rerank"])
+    app.include_router(match_reason.router, prefix="/api/v1", tags=["match"])
 
     return app
 
