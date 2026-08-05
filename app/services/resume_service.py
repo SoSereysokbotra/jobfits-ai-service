@@ -30,14 +30,29 @@ class ResumeService:
         self._ollama = ollama
         self._settings = settings
 
-    async def parse(self, text: str, file_type: FileType) -> ParseResponse:
+    async def parse(
+        self, text: str, file_type: FileType, prompt_version: str = "v2"
+    ) -> ParseResponse:
+        try:
+            prompt = load_prompt(f"resume_parse_{prompt_version}.txt")
+        except OSError as exc:
+            raise AiServiceError(
+                ErrorCode.BAD_REQUEST,
+                f"Unknown resume prompt version: {prompt_version}",
+                400,
+            ) from exc
+
         messages = [
-            {"role": "system", "content": load_prompt("resume_parse.txt")},
+            {"role": "system", "content": prompt},
             {"role": "user", "content": text},
         ]
         content = await self._ollama.chat(messages, json_mode=True)
         data = extract_json(content)
-        return self._validate(ParseResponse, data)
+        parsed = self._validate(ParseResponse, data)
+        # Echo the version that produced this, so a stored parse can be traced back
+        # to its prompt — the model does not report it.
+        parsed.prompt_version = prompt_version
+        return parsed
 
     async def score(self, text: str, target_role: str | None) -> ScoreResponse:
         payload = json.dumps({"resume": text, "targetRole": target_role})

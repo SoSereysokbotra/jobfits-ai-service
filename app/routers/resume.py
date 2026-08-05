@@ -24,7 +24,9 @@ async def parse(
     ollama: OllamaClient = Depends(get_ollama_client),
     settings: Settings = Depends(get_current_settings),
 ) -> ParseResponse:
-    return await ResumeService(ollama, settings).parse(request.text, request.file_type)
+    return await ResumeService(ollama, settings).parse(
+        request.text, request.file_type, request.prompt_version
+    )
 
 
 @router.post("/resume/score", response_model=ScoreResponse)

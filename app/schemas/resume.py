@@ -32,9 +32,29 @@ class EducationItem(CamelModel):
     graduation_year: Optional[int] = None
 
 
+class ProjectItem(CamelModel):
+    """Personal/academic/technical work, as distinct from employment.
+
+    Measured need: on a student CV the projects carry nearly all the technical signal
+    (Arduino, PID control, computer vision) while the SKILLS section holds only soft
+    skills. With nowhere to put them the model folded projects into `experiences`,
+    inventing jobs that were never held.
+    """
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    # Only technologies NAMED in the text — extraction, not inference.
+    technologies: list[str] = Field(default_factory=list)
+
+
 class ParseRequest(CamelModel):
     text: str = Field(..., min_length=1)
     file_type: FileType
+    # Picks app/prompts/resume_parse_<v>.txt. Default is the current best version;
+    # v1 is kept so the 2026-08-05 extractor measurement stays reproducible.
+    prompt_version: str = Field(default="v2", pattern=r"^[a-z0-9_]+$")
 
 
 class ParseResponse(CamelModel):
@@ -46,6 +66,8 @@ class ParseResponse(CamelModel):
     skills: list[str] = Field(default_factory=list)
     experiences: list[ExperienceItem] = Field(default_factory=list)
     educations: list[EducationItem] = Field(default_factory=list)
+    projects: list[ProjectItem] = Field(default_factory=list)
+    prompt_version: str = "v1"
 
 
 # ── /resume/score ────────────────────────────────────────────────────────────
