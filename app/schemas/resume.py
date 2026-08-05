@@ -52,9 +52,13 @@ class ProjectItem(CamelModel):
 class ParseRequest(CamelModel):
     text: str = Field(..., min_length=1)
     file_type: FileType
-    # Picks app/prompts/resume_parse_<v>.txt. Default is the current best version;
-    # v1 is kept so the 2026-08-05 extractor measurement stays reproducible.
-    prompt_version: str = Field(default="v2", pattern=r"^[a-z0-9_]+$")
+    # Picks app/prompts/resume_parse_<v>.txt. Default is the best-MEASURED version, not
+    # the newest. v1-v3 are kept so earlier measurements stay reproducible.
+    # n=8 runs each on the reference CV, qwen3:0.6b, identical reading-order input:
+    #   v2 mean 3.9/7 · correct start month 0/7 · company correctly null ~43%
+    #   v3 mean 4.0/7 · correct start month 8/8 · company correctly null ~62%
+    #   v4 mean 4.5/7 · correct start month 7/8 · company correctly null ~87%
+    prompt_version: str = Field(default="v4", pattern=r"^[a-z0-9_]+$")
 
 
 class ParseResponse(CamelModel):

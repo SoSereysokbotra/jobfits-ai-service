@@ -126,22 +126,24 @@ def test_parse_defaults_projects_to_empty_list():
 
 
 @respx.mock
-def test_parse_echoes_prompt_version_and_defaults_to_v2():
+def test_parse_echoes_prompt_version_and_defaults_to_best_measured():
     content = json.dumps({"fullName": "John", "skills": []})
     respx.post("http://localhost:11434/api/chat").mock(return_value=_chat(content))
 
+    # v4 is the best-MEASURED version, not merely the newest (n=8 on the reference CV).
     default = client.post(
         "/api/v1/resume/parse", json={"text": "x", "fileType": "PDF"}, headers=AUTH
     )
-    assert default.json()["promptVersion"] == "v2"
+    assert default.json()["promptVersion"] == "v4"
 
-    # v1 is retained so the 2026-08-05 extractor measurement stays reproducible.
-    pinned = client.post(
-        "/api/v1/resume/parse",
-        json={"text": "x", "fileType": "PDF", "promptVersion": "v1"},
-        headers=AUTH,
-    )
-    assert pinned.json()["promptVersion"] == "v1"
+    # Older versions are retained so earlier measurements stay reproducible.
+    for version in ("v1", "v2", "v3"):
+        pinned = client.post(
+            "/api/v1/resume/parse",
+            json={"text": "x", "fileType": "PDF", "promptVersion": version},
+            headers=AUTH,
+        )
+        assert pinned.json()["promptVersion"] == version
 
 
 def test_parse_unknown_prompt_version_is_rejected():

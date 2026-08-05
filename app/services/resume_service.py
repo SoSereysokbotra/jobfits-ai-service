@@ -31,7 +31,7 @@ class ResumeService:
         self._settings = settings
 
     async def parse(
-        self, text: str, file_type: FileType, prompt_version: str = "v2"
+        self, text: str, file_type: FileType, prompt_version: str = "v4"
     ) -> ParseResponse:
         try:
             prompt = load_prompt(f"resume_parse_{prompt_version}.txt")
