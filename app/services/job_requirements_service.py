@@ -24,7 +24,7 @@ from app.schemas.job_requirements import (
     JobRequirementsRequest,
     JobRequirementsResponse,
 )
-from app.services.ollama_client import OllamaClient
+from app.services.chat_router import TASK_JOB_REQUIREMENTS, ChatRouter
 
 logger = logging.getLogger("ai-service")
 
@@ -58,8 +58,8 @@ def _content_words(text: str) -> set[str]:
 
 
 class JobRequirementsService:
-    def __init__(self, ollama: OllamaClient, settings: Settings) -> None:
-        self._ollama = ollama
+    def __init__(self, chat: ChatRouter, settings: Settings) -> None:
+        self._chat = chat
         self._settings = settings
 
     async def extract(self, req: JobRequirementsRequest) -> JobRequirementsResponse:
@@ -75,7 +75,7 @@ class JobRequirementsService:
         payload = json.dumps(
             {"jobTitle": req.job_title, "jobDescription": req.job_description}
         )
-        content = await self._ollama.chat(
+        content = await self._chat.for_task(TASK_JOB_REQUIREMENTS).chat(
             [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": payload},

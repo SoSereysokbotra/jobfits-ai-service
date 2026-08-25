@@ -49,6 +49,8 @@ That's a defensible portfolio result: *"I built a re-ranker and proved it lifted
 
 Still ahead in Phase B (whenever): make the re-ranker reach real users, add metadata filtering, and eventually try a proper cross-encoder model.
 
+**Side issue found + fixed 2026-08-17:** when a user had uploaded several CVs, the matching engine used *the most recently updated* one, not the one they marked as default — and could even use a CV they had deleted. The "default résumé" feature was already fully built (DB, API, UI); the AI pipeline just never read it. Now fixed in `jobfit-backend` across all 8 places that pick a résumé, plus auto-default on first upload and a re-embed when the default changes. **One thing left: re-run the Phase A eval**, because the eval harness was one of those 8 places and the measuring stick moved. Details: `docs/PHASE_DEFAULT_RESUME.md`.
+
 ---
 
 ## Earlier snapshot

@@ -3,6 +3,12 @@
 Cover letters and interview feedback are free text (json_mode=False). Interview
 question generation is structured, so it runs in JSON mode and is validated
 against InterviewResponse.
+
+EACH FLOW PICKS ITS OWN PROVIDER, because they do not carry the same data. Interview
+QUESTIONS are built from a job title and level and reveal nothing about the user, so they
+may run on DeepSeek. A cover letter carries `resumeSummary` (derived from the user's CV) and
+feedback carries the user's own written answer, so both stay local unless someone
+deliberately allowlists them. See chat_router.py.
 """
 
 from __future__ import annotations
@@ -21,12 +27,17 @@ from app.schemas.generate import (
     InterviewRequest,
     InterviewResponse,
 )
-from app.services.ollama_client import OllamaClient
+from app.services.chat_router import (
+    TASK_COVER_LETTER,
+    TASK_INTERVIEW,
+    TASK_INTERVIEW_FEEDBACK,
+    ChatRouter,
+)
 
 
 class GenerateService:
-    def __init__(self, ollama: OllamaClient, settings: Settings) -> None:
-        self._ollama = ollama
+    def __init__(self, chat: ChatRouter, settings: Settings) -> None:
+        self._chat = chat
         self._settings = settings
 
     async def cover_letter(self, req: CoverLetterRequest) -> CoverLetterResponse:
@@ -39,7 +50,9 @@ class GenerateService:
                 "tone": req.tone,
             }
         )
-        text = await self._chat_text("cover_letter.txt", payload, "cover letter")
+        text = await self._chat_text(
+            "cover_letter.txt", payload, "cover letter", task=TASK_COVER_LETTER
+        )
         return CoverLetterResponse(cover_letter=text)
 
     async def interview(self, req: InterviewRequest) -> InterviewResponse:
@@ -61,7 +74,7 @@ class GenerateService:
             {"role": "system", "content": load_prompt("interview.txt")},
             {"role": "user", "content": payload},
         ]
-        content = await self._ollama.chat(messages, json_mode=True)
+        content = await self._chat.for_task(TASK_INTERVIEW).chat(messages, json_mode=True)
         data = extract_json(content)
         # A model may return a bare list of questions instead of the wrapper object.
         if isinstance(data, list):
@@ -91,19 +104,28 @@ class GenerateService:
             }
         )
         text = await self._chat_text(
-            "interview_feedback.txt", payload, "interview feedback"
+            "interview_feedback.txt",
+            payload,
+            "interview feedback",
+            task=TASK_INTERVIEW_FEEDBACK,
         )
         return InterviewResponse(feedback=text)
 
     # ── helpers ──────────────────────────────────────────────────────────────
 
-    async def _chat_text(self, prompt_file: str, payload: str, label: str) -> str:
-        """Run a free-text generation and return non-empty stripped output."""
+    async def _chat_text(
+        self, prompt_file: str, payload: str, label: str, *, task: str
+    ) -> str:
+        """Run a free-text generation and return non-empty stripped output.
+
+        `task` is required (keyword-only) so a new flow cannot be added without stating
+        which data class it belongs to — the router decides from that alone.
+        """
         messages = [
             {"role": "system", "content": load_prompt(prompt_file)},
             {"role": "user", "content": payload},
         ]
-        content = await self._ollama.chat(messages, json_mode=False)
+        content = await self._chat.for_task(task).chat(messages, json_mode=False)
         text = (content or "").strip()
         if not text:
             raise AiServiceError(

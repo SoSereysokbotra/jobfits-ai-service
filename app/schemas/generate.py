@@ -38,7 +38,16 @@ class InterviewQuestion(CamelModel):
 
 class InterviewRequest(CamelModel):
     job_title: str = Field(..., min_length=1)
-    job_description: str = Field(..., min_length=1)
+    # MUST accept "". The browser extension reads a job title off the page and has no
+    # posting body, so `GenerationService.interviewForExternalJob` sends an empty
+    # description by design.
+    #
+    # FOUND 2026-08-20 — this was `min_length=1`, so every extension interview-prep
+    # request was rejected 400, the backend swallowed it as an AiServiceError, and users
+    # silently got the three hardcoded static questions instead of generated ones. The
+    # feature had never once run on a model. A title-only request is the normal case here,
+    # not a malformed one.
+    job_description: str = Field(default="", min_length=0)
     level: str = Field(..., min_length=1)
     kind: Literal["questions", "feedback"]
     answer: Optional[str] = None  # required when kind == "feedback"

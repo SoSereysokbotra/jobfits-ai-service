@@ -166,3 +166,28 @@ def test_generate_requires_api_key():
     )
     assert r.status_code == 401
     assert r.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+@respx.mock
+def test_interview_accepts_empty_job_description():
+    """REGRESSION, 2026-08-20. The browser extension has only a job title.
+
+    `min_length=1` on jobDescription rejected every extension interview-prep call with a
+    400; the backend swallowed it as an AiServiceError and served three hardcoded static
+    questions, so the feature had never run on a model at all. A title-only request is the
+    normal case for this endpoint.
+    """
+    respx.post("http://localhost:11434/api/chat").mock(
+        return_value=_chat(json.dumps({"questions": []}))
+    )
+    r = client.post(
+        "/api/v1/generate/interview",
+        json={
+            "jobTitle": "Frontend Developer",
+            "jobDescription": "",
+            "level": "mid",
+            "kind": "questions",
+        },
+        headers=AUTH,
+    )
+    assert r.status_code == 200, r.text

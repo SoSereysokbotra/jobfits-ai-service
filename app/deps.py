@@ -6,6 +6,7 @@ from fastapi import Header
 
 from app.config import Settings, get_settings
 from app.core.errors import AiServiceError, ErrorCode
+from app.services.chat_router import ChatRouter
 from app.services.ollama_client import OllamaClient
 
 
@@ -24,6 +25,17 @@ def require_api_key(x_ai_service_key: str | None = Header(default=None)) -> None
 def get_ollama_client() -> OllamaClient:
     """Provide an OllamaClient built from current settings."""
     return OllamaClient(get_settings())
+
+
+def get_chat_router() -> ChatRouter:
+    """Provide a ChatRouter (task -> chat provider).
+
+    Injected ONLY into the generate and job-requirements routers. Résumé, embed, rerank and
+    match-reason keep depending on `get_ollama_client` directly, which is what makes the
+    "personal data never leaves this machine" rule structural — see chat_router.py.
+    """
+    settings = get_settings()
+    return ChatRouter(settings, OllamaClient(settings))
 
 
 def get_current_settings() -> Settings:
