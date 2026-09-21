@@ -12,7 +12,14 @@
 #
 # Ollama must already be running (it is a Windows service; check with `ollama list`).
 
-param([switch]$Stop, [switch]$UpdateBackend)
+# -Domain: the account's reserved ngrok domain (e.g. yourname.ngrok-free.app). WITHOUT
+# it ngrok hands out a NEW random hostname on every start, which is fine for local use
+# and useless for anything that has to be told the address in advance - the deployed
+# backend on Cloud Run reads AI_SERVICE_URL from its build config and cannot follow a
+# hostname that changes. With it, the tunnel comes up at the same address every time, so
+# the deployed AI_SERVICE_URL stays correct across laptop restarts. Defaults to the
+# reserved domain set as the default below; pass -Domain "" for the old random behaviour.
+param([switch]$Stop, [switch]$UpdateBackend, [string]$Domain = "stellar-nanny-thermos.ngrok-free.dev")
 
 $ErrorActionPreference = "Stop"
 $Root       = $PSScriptRoot
@@ -53,8 +60,14 @@ if (Get-PortOwner $Port) {
 if (Get-PortOwner 4040) {
     Write-Host "[2/4] ngrok already running"
 } else {
-    Write-Host "[2/4] starting ngrok"
-    Start-Process -FilePath "ngrok" -ArgumentList "http","$Port","--log=stdout","--log-level=info" `
+    $ngrokArgs = @("http", "$Port", "--log=stdout", "--log-level=info")
+    if ($Domain) {
+        $ngrokArgs += "--url=$Domain"
+        Write-Host "[2/4] starting ngrok on fixed domain $Domain"
+    } else {
+        Write-Host "[2/4] starting ngrok (random hostname - pass -Domain for a fixed one)"
+    }
+    Start-Process -FilePath "ngrok" -ArgumentList $ngrokArgs `
         -WindowStyle Hidden `
         -RedirectStandardOutput (Join-Path $LogDir "ngrok.log") `
         -RedirectStandardError  (Join-Path $LogDir "ngrok.err.log")
