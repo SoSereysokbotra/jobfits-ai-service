@@ -25,6 +25,12 @@ class CamelModel(BaseModel):
 class FileType(str, Enum):
     PDF = "PDF"
     DOCX = "DOCX"
+    # A photographed or scanned CV, whose text the backend obtained by OCR before
+    # calling here. Added 2026-09-24: without it the backend's OCR path fails at this
+    # boundary with a 422, because this field is VALIDATED here and then never read —
+    # ResumeService.parse uses only `text` and `prompt_version`. It is kept rather than
+    # dropped so the request still records what the text came from.
+    IMAGE = "IMAGE"
 
 
 class ErrorBody(BaseModel):
